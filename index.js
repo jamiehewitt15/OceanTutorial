@@ -23,6 +23,10 @@ const init = async () => {
  );
  const tokenAddress = await datatoken.create(blob, alice);
  console.log(`Deployed datatoken address: ${tokenAddress}`);
+
+ await datatoken.mint(tokenAddress, alice, '200', alice)
+ let aliceBalance = await datatoken.balance(tokenAddress, alice)
+ console.log('Alice token balance:', aliceBalance)
 };
  
 init();
