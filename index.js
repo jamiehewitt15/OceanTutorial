@@ -32,10 +32,7 @@ const init = async () => {
  const ocean = await Ocean.getInstance(config);
  const blob = `http://localhost:8030/api/v1/services/consume`;
  const owner = (await ocean.accounts.list())[0]
- const owner = (await ocean.accounts.list())[1]
-
- await datatoken.mint(ocean.pool.oceanAddress, owner.getId(), tokenAmount)
- await datatoken.transfer(ocean.pool.oceanAddress, alice.getId(), '200', owner.getId())
+ const alice = (await ocean.accounts.list())[1]
  
  console.log('Alice account address:', alice)
  
@@ -45,15 +42,18 @@ const init = async () => {
    datatokensABI,
    new Web3(urls.networkUrl)
  );
- const tokenAddress = await datatoken.create(blob, alice);
+ const tokenAddress = await datatoken.create(blob, alice.getId());
  console.log(`Deployed datatoken address: ${tokenAddress}`);
 
- await datatoken.mint(tokenAddress, alice, '200', alice)
- let aliceBalance = await datatoken.balance(tokenAddress, alice)
+ await datatoken.mint(ocean.pool.oceanAddress, owner.getId(), tokenAmount)
+ await datatoken.transfer(ocean.pool.oceanAddress, alice.getId(), '200', owner.getId())
+
+ await datatoken.mint(tokenAddress, alice.getId(), '200', alice.getId())
+ let aliceBalance = await datatoken.balance(tokenAddress, alice.getId())
  console.log('Alice token balance:', aliceBalance)
 
  dataService = await ocean.assets.createAccessServiceAttributes(
-    accounts[0],
+    alice,
     10, // set the price in datatoken
     new Date(Date.now()).toISOString().split(".")[0] + "Z", // publishedDate
     0 // timeout
@@ -62,7 +62,7 @@ const init = async () => {
   // publish asset
   const createData = await ocean.assets.create(
     testData,
-    accounts[0],
+    alice,
     [dataService],
     tokenAddress
   );
@@ -73,7 +73,7 @@ const init = async () => {
   // Create Pool pricing for the dataset
   tokenAddressWithPool = await datatoken.create(
     blob,
-    alice,
+    alice.getId(),
     '10000000000',
     'AliceDT',
     'DTA'
@@ -83,7 +83,7 @@ const init = async () => {
   const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
   const timeout = 0
   service1 = await ocean.assets.createAccessServiceAttributes(
-    accounts[0],
+    alice,
     price,
     publishedDate,
     timeout
@@ -91,14 +91,14 @@ const init = async () => {
   console.log("service1", service1)
   ddoWithPool = await ocean.assets.create(
     assetWithPool,
-    accounts[0],
+    alice,
     [service1],
     tokenAddressWithPool
   )
   console.log("ddoWithPool", ddoWithPool)
   
-  await datatoken.mint(tokenAddressWithPool, alice, tokenAmount)
-  aliceBalance = await datatoken.balance(contracts.Ocean, alice)
+  await datatoken.mint(tokenAddressWithPool, alice.getId(), tokenAmount)
+  aliceBalance = await datatoken.balance(contracts.Ocean, alice.getId())
   console.log('Alice Ocean balance:', aliceBalance)
 
   const dtAmount = '45'
@@ -107,29 +107,25 @@ const init = async () => {
     (parseFloat(dtAmount) * (10 - parseFloat(dtWeight))) / parseFloat(dtWeight)
   const fee = '0.02'
   console.log(        
-    accounts[0].getId(),
+    alice.getId(),
     tokenAddressWithPool,
     dtAmount,
     dtWeight,
     String(oceanAmount),
     fee)
-  try {
+
     const createTx = await ocean.pool.create(
-        accounts[0].getId(),
+        alice.getId(),
         tokenAddressWithPool,
         dtAmount,
         dtWeight,
         String(oceanAmount),
         fee
       )
-      console.log("createTx:", createTx)
-  } catch (error) {
-      console.log("Error 1", error)
-  }
+      //console.log("createTx:", createTx)
 
-//   console.log("createTx:", createTx)
-  // const alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
-  // console.log("Pool address:", alicePoolAddress)
+  const alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
+  console.log("Pool address:", alicePoolAddress)
 };
  
 init();
