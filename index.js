@@ -163,6 +163,29 @@ const init = async () => {
   console.log('Alice token balance:', aliceBalance)
   console.log('Bob token balance:', bobBalance)
 
+  // Wait for datatoken to be published
+  // await new Promise(r => setTimeout(r, 15000)); 
+  await waitForAqua(ocean, ddoWithPool.id)
+  
+  const asset = await ocean.assets.resolve(ddoWithPool.id)
+  console.log("asset", asset)
+  const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
+  console.log("accessService", accessService)
+
+  const bobTransaction = await ocean.assets.order(asset.id, 'access', bob.getId())
+  console.log("bobTransaction", bobTransaction)
+
+
+
+const data = await ocean.assets.download(
+  asset.id,
+  bobTransaction,
+  tokenAddress,
+  accounts[2],
+  './datafiles'
+)
+bobBalance = await datatoken.balance(tokenAddress, bob)
+console.log("Bob token balance:", bobBalance)
 };
  
 init();
