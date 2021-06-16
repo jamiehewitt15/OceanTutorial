@@ -1,5 +1,6 @@
 const Web3 = require("web3");
 const { Ocean, DataTokens, Account } = require("@oceanprotocol/lib");
+const fetch = require('cross-fetch')
 const { testData } = require("./data");
  
 const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
@@ -25,7 +26,28 @@ const assetWithPool = {
       ]
     }
   }
- 
+  function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+  }
+
+  async function waitForAqua(ocean, did) {
+    const apiPath = '/api/v1/aquarius/assets/ddo'
+    let tries = 0
+    do {
+      try {
+        const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+        if (result.ok) {
+          break
+        }
+      } catch (e) {
+        // do nothing
+      }
+      await sleep(1500)
+      tries++
+    } while (tries < 100)
+  }
  
 const init = async () => {
 
@@ -33,8 +55,9 @@ const init = async () => {
  const blob = `http://localhost:8030/api/v1/services/consume`;
  const owner = (await ocean.accounts.list())[0]
  const alice = (await ocean.accounts.list())[1]
+ const bob = (await ocean.accounts.list())[2]
  
- console.log('Alice account address:', alice)
+ console.log('Alice account address:', alice.getId())
  
  const datatoken = new DataTokens(
    contracts.DTFactory,
@@ -126,6 +149,20 @@ const init = async () => {
 
   const alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
   console.log("Pool address:", alicePoolAddress)
+  console.log("ddoWithPool.id", ddoWithPool.id)
+
+  // await waitForAqua(ocean, ddoWithPool.id)
+
+  const transaction = await datatoken.transfer(tokenAddress, bob.getId(), '50', alice.getId())
+  const transactionId = transaction['transactionHash']
+  console.log('transactionId', transactionId)
+
+  let bobBalance = await datatoken.balance(tokenAddress, bob.getId())
+  aliceBalance = await datatoken.balance(tokenAddress, alice.getId())
+
+  console.log('Alice token balance:', aliceBalance)
+  console.log('Bob token balance:', bobBalance)
+
 };
  
 init();
