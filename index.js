@@ -65,7 +65,12 @@ const init = async () => {
    datatokensABI,
    new Web3(urls.networkUrl)
  );
- const tokenAddress = await datatoken.create(blob, alice.getId());
+ const tokenAddress = await datatoken.create(
+    blob, 
+    alice.getId(),
+    '10000000000',
+    'AliceDT',
+    'DTA');
  console.log(`Deployed datatoken address: ${tokenAddress}`);
 
  await datatoken.mint(ocean.pool.oceanAddress, owner.getId(), tokenAmount)
@@ -83,14 +88,22 @@ const init = async () => {
   );
   
   // publish asset
-  const createData = await ocean.assets.create(
+  const ddo = await ocean.assets.create(
     testData,
     alice,
     [dataService],
     tokenAddress
   );
+  const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
+    console.log("storeTx", storeTx)
+    // await waitForAqua(ocean, ddo.id)
+    await new Promise(r => setTimeout(r, 25000)); 
+
+    await ocean.assets.resolve(ddo.id).then((newDDO) => {
+      console.log("Resolve", newDDO.id, ddo.id)
+    })
   
-  const dataId = createData.id;
+  const dataId = ddo.id;
   console.log('Data ID:', dataId);
 
   // Create Pool pricing for the dataset
@@ -164,10 +177,10 @@ const init = async () => {
   console.log('Bob token balance:', bobBalance)
 
   // Wait for datatoken to be published
-  // await new Promise(r => setTimeout(r, 15000)); 
-  await waitForAqua(ocean, ddoWithPool.id)
+  await new Promise(r => setTimeout(r, 15000)); 
+  // node index.jsawait waitForAqua(ocean, ddoWithPool.id)
   
-  const asset = await ocean.assets.resolve(ddoWithPool.id)
+  const asset = await ocean.assets.resolve(ddo.id)
   console.log("asset", asset)
   const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
   console.log("accessService", accessService)
@@ -178,13 +191,14 @@ const init = async () => {
 
 
 const data = await ocean.assets.download(
-  asset.id,
+  ddo.id,
   bobTransaction,
   tokenAddress,
-  accounts[2],
+  bob,
   './datafiles'
 )
-bobBalance = await datatoken.balance(tokenAddress, bob)
+console.log("data Download", data)
+bobBalance = await datatoken.balance(tokenAddress, bob.getId())
 console.log("Bob token balance:", bobBalance)
 };
  
