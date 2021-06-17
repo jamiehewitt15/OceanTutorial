@@ -9,12 +9,12 @@ const urls = {
 };
  
 const contracts = {
-    "DTFactory": "0xF18Fc0D2B31cc0Ead0a66AFa22133f8637be6B62",
-    "BFactory": "0xf8F6300500A7297DE52570A99982e5e73685420d",
-    "FixedRateExchange": "0xBAD914fE2b693Fc540C8E0B6C8cD39a164068aB6",
-    "Metadata": "0xAE0A420c97748d0FCD894D9d7AF2effaD4a92be5",
-    "Ocean": "0xb0075Ec7153FC91E8c05084c74B8324abB6C62A5",
-    "Dispenser": "0x3BB5A0647117d7d6816023Cd3331a3D75b319112"
+    "DTFactory": "0xC4B0c99bBCb457d3a093753aCE6175AaDd3C2C59",
+    "BFactory": "0xc335822E719dacE6f8915086f3474392ff2dB960",
+    "FixedRateExchange": "0x3C674eCFd709410b0fc4c163abfEF0c38eAcCdc5",
+    "Metadata": "0x96ed1Dfb6d5bC9991A4EA8C5Cd980B2695204F65",
+    "Ocean": "0xC3559B42E57804eac5D733fC7C3422133da1a0fE",
+    "Dispenser": "0xB2b539982c9FB911ceAe4E81989D4C057815F9e9"
 };
  
 const config = {
